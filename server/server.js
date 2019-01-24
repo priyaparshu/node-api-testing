@@ -5,6 +5,7 @@ var { mongoose } = require('./db/mongoose');
 var { Todo } = require('./models/todo');
 var { User } = require('./models/user');
 
+const { ObjectId } = require('mongodb');
 
 
 //mongoose.Promise = global.Promise
@@ -48,10 +49,29 @@ app.get('/todos', (req, res) => {
         res.status(400).send(e);
     })
 });
+
+// api for querystring
+
+app.get('/todos/:id', (req, res) => {
+    var id = req.params.id;
+    console.log(id);
+    if (!ObjectId.isValid(id)) {
+        console.log('Id not found');
+        return res.status(404).send();
+    }
+
+    Todo.findById(id).then((todo) => {
+        if (!todo) {
+            return res.status(404).send();
+        }
+        res.send({ todo });
+    }).catch((e) => {
+        res.status(400).send();
+    });
+})
 module.exports = { app };
 
 
 app.listen(5000, () => {
     console.log('listening on port 5000')
 });
-
