@@ -52,6 +52,10 @@ app.get('/todos', (req, res) => {
 
 // api for querystring
 
+// app.get('/todos/:id', (req, res) => {
+//     console.log(res.params)
+// })
+
 app.get('/todos/:id', (req, res) => {
     var id = req.params.id;
     console.log(id);
