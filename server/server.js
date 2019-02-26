@@ -57,6 +57,7 @@ app.get('/todos', (req, res) => {
 // })
 
 app.get('/todos/:id', (req, res) => {
+    //res.send(req.params);
     var id = req.params.id;
     console.log(id);
     if (!ObjectId.isValid(id)) {
@@ -70,8 +71,26 @@ app.get('/todos/:id', (req, res) => {
         }
         res.send({ todo });
     }).catch((e) => {
-        res.status(400).send();
+        return res.status(400).send();
     });
+})
+
+app.get('/users/:id', (req, res) => {
+    //res.send(req.params);
+    var id = req.params.id;
+    //console.log(id);
+    if (!ObjectId.isValid(id)) {
+        //console.log('Id not found');
+        return res.status(404).send();
+    }
+    User.findById(id).then((user) => {
+        if (!user) {
+            res.send(404).send();
+        }
+        res.send({ user });
+    }).catch((e) => {
+        res.send(400).send();
+    })
 })
 module.exports = { app };
 
