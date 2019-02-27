@@ -38,6 +38,22 @@ app.post('/todos', (req, res) => {
         res.status(400).send(e);
     })
 })
+
+app.delete('/todos/:id', (req, res) => {
+    var Id = req.params.id;
+    if (!ObjectId.isValid) {
+        return res.status(404).send();
+    }
+
+    Todo.findByIdAndDelete(Id).then((doc) => {
+        if (!doc) {
+            res.send(404).send();
+        }
+        res.status(200).send(doc);
+    }).catch((err) => {
+        res.status(400).send();
+    })
+})
 // todo2.save().then((doc) => {
 //     res.send(doc);
 // }, (err) => {
