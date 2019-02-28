@@ -41,19 +41,22 @@ app.post('/todos', (req, res) => {
 
 app.delete('/todos/:id', (req, res) => {
     var Id = req.params.id;
+    //console.log(ObjectId);
     if (!ObjectId.isValid) {
+        //console.log("id not found", ObjectId);
         return res.status(404).send();
     }
 
-    Todo.findByIdAndDelete(Id).then((doc) => {
-        if (!doc) {
-            res.send(404).send();
+    Todo.findByIdAndRemove(Id).then((todo) => {
+        //console.log(todo);
+        if (!todo) {
+            return res.status(404).send();
         }
-        res.status(200).send(doc);
+        res.send({ todo });
     }).catch((err) => {
         res.status(400).send();
-    })
-})
+    });
+});
 // todo2.save().then((doc) => {
 //     res.send(doc);
 // }, (err) => {
@@ -77,9 +80,9 @@ app.get('/todos', (req, res) => {
 app.get('/todos/:id', (req, res) => {
     //res.send(req.params);
     var id = req.params.id;
-    console.log(id);
+    //console.log(id);
     if (!ObjectId.isValid(id)) {
-        console.log('Id not found');
+        //console.log('Id not found');
         return res.status(404).send();
     }
 
