@@ -1,3 +1,5 @@
+
+require('./config/config')
 const _ = require('lodash');
 var express = require('express');
 var bodyParser = require('body-parser');
@@ -14,7 +16,7 @@ const { ObjectId } = require('mongodb');
 
 var app = express();
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT;
 app.use(bodyParser.json());
 
 // app.post('/todos', (req, res) => {
@@ -117,7 +119,9 @@ app.get('/users/:id', (req, res) => {
 
 app.patch('/todos/:id', (req, res) => {
     var id = req.params.id;
-    //console.log(id);
+    //
+
+    console.log(id);
     var body = _.pick(req.body, ['text', 'completed']);
 
     if (!ObjectId.isValid) {
