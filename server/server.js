@@ -99,6 +99,25 @@ app.get('/todos/:id', (req, res) => {
     });
 })
 
+app.post('/users', (req, res) => {
+    var body = _.pick(req.body, ['email', 'password']);
+    //console.log(body);
+    var user = new User(body);
+    user.save().then(() => {
+        // generate token 
+        //console.log(user.generateAuthToken())
+        return user.generateAuthToken();
+    }).then((token) => {
+        console.log('----------');
+        console.log('token', token);
+        res.header('x-auth', token).send(user);
+    }).catch((err) => {
+        res.status(400).send(err);
+    });
+
+})
+
+
 app.get('/users/:id', (req, res) => {
     //res.send(req.params);
     var id = req.params.id;
