@@ -105,13 +105,13 @@ app.post('/users', (req, res) => {
     var user = new User(body);
     user.save().then(() => {
         // generate token 
-        console.log("USR", user);
+        //console.log("USR", user);
         return user.generateAuthToken();
     }).then((token) => {
         // console.log('----------');
         //console.log('token', token);
         res.header('x-auth', token).send(user);
-        console.log("user==", user)
+        //console.log("user==", user)
     }).catch((err) => {
         res.status(400).send(err);
     });
@@ -144,7 +144,7 @@ app.patch('/todos/:id', (req, res) => {
     var id = req.params.id;
     //
 
-    console.log(id);
+    //console.log(id);
     var body = _.pick(req.body, ['text', 'completed']);
 
     if (!ObjectId.isValid) {
