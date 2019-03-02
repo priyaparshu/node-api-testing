@@ -54,13 +54,35 @@ UserSchema.methods.generateAuthToken = function () {
     var access = 'auth';
     var token = jwt.sign({ _id: user._id.toHexString(), access }, 'abc123').toString();
 
-    user.tokens.concat([{ access, token }]);
+    user.tokens = user.tokens.concat([{ access, token }]);
+    //console.log(tokens);
     //user.tokens({ access, token })
     return user.save().then(() => {
         return token;
     })
 
 };
+
+UserSchema.statics.findByToken = function (token) {
+    var User = this;
+    var decoded;
+
+    try {
+        decoded = jwt.verify(token, 'abc123')
+        //console.log('===========', decoded);
+    } catch (e) {
+        return Promise.reject();
+        // return new Promise((resolve,reject) => {
+        //     reject();
+        // })
+    }
+    return User.findOne({
+        "_id": decoded._id,
+        "tokens.token": token,
+        "tokens.access": "auth"
+    })
+
+}
 
 //return a value that will be then chained in server.js
 
