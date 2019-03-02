@@ -43,18 +43,20 @@ app.post('/todos', (req, res) => {
 })
 
 app.delete('/todos/:id', (req, res) => {
-    var Id = req.params.id;
+    var id = req.params.id;
     //console.log(ObjectId);
-    if (!ObjectId.isValid) {
-        //console.log("id not found", ObjectId);
+    console.log('++', id);
+    if (!ObjectId.isValid(id)) {
+        console.log("id not found", ObjectId.isValid);
         return res.status(404).send();
     }
 
-    Todo.findByIdAndRemove(Id).then((todo) => {
-        //console.log(todo);
+    Todo.findByIdAndDelete(id).then((todo) => {
+        //console.log("todo-del", todo.id);
         if (!todo) {
             return res.status(404).send();
         }
+        //console.log("todo-", todo);
         res.send({ todo });
     }).catch((err) => {
         res.status(400).send();
