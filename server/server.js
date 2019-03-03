@@ -169,9 +169,27 @@ app.patch('/todos/:id', (req, res) => {
         res.status(400).send();
     })
 })
+//POST /users/login{email,password}
+app.post('/users/login', (req, res) => {
+
+    var body = _.pick(req.body, ['email', 'password']);
+    //console.log(body.email);
+
+    User.findByCredentials(body.email, body.password).then((user) => {
+        res.send(user);
+        return user.generateAuthToken().then((token) => {
+            res.header('x-auth', token).send(user);
+        });
+
+    }).catch((e) => {
+        res.status(400).send();
+    });
+
+});
+
+
+
 module.exports = { app };
-
-
 app.listen(port, () => {
     console.log(`listening on port ${port}`)
 });
