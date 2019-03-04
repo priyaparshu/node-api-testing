@@ -1,20 +1,19 @@
 const expect = require('expect');
 const request = require('supertest');
 
-const { app } = require('./../server');
-const { Todo } = require('./../models/todo');
+const { app } = require('../server');
+const { Todo } = require('../models/todo');
 
 const { ObjectID } = require('mongodb');
-const { User } = require('./../models/user');
+const { User } = require('../models/user');
 
 const { todos, populateTodos, users, populateUsers } = require('./seed/seed');
 
 // beforeEach((done) => {
-//     Todo.remove({}).then(() => done());
+//     Todo.deleteMany({}).then(() => done());
 // });
 beforeEach(populateUsers);
 beforeEach(populateTodos);
-
 
 describe('POST /todos', () => {
     it('should create a new todo', (done) => {
@@ -236,8 +235,8 @@ describe('POST /users', () => {
             .send({ email, password })
             .expect(200)
             .expect((res) => {
-                expect(res.headers['x-auth']).toBeTruthy();
-                expect(res.body._id).toBeTruthy();
+                expect(res.headers['x-auth']).toExist();
+                expect(res.body._id).toExist();
                 expect(res.body.email).toBe(email);
             })
             .end((err) => {
@@ -245,19 +244,22 @@ describe('POST /users', () => {
                     return done(err);
                 }
                 User.findOne({ email }).then((user) => {
-                    expect(user).toBeTruthy();
+                    expect(user).toExist();
                     //check if pwd is hashed or not
-                    //expect(user.password).tonotbe(password);
+                    expect(user.password).toNotBe(password);
                     done();
-                })
+                }).catch((err) => done(err));
             });
     });
     it('should return validation error if request invalid', (done) => {
-        var email = 'andrew.example.com';
-        var password = '1';
+        // var email = 'andrew.example.com';
+        // var password = '1';
         request(app)
             .post('/users')
-            .send({ email, password })
+            .send({
+                email: 'and',
+                password: '123'
+            })
             .expect(400)
             .end(done);
     })
@@ -272,4 +274,70 @@ describe('POST /users', () => {
             .expect(400)
             .end(done);
     })
+})
+
+describe('POST /users/login', () => {
+    it('should login user and return auth token', (done) => {
+
+        request(app)
+            .post('/users/login')
+            .send({
+                email: users[1].email,
+                password: users[1].password
+            })
+            .expect(200)
+            .expect((res) => {
+
+                expect(res.headers['x-auth']).toExist();
+
+            })
+            .end((err, res) => {
+                if (err) {
+                    //console.log('oops error');
+                    return done(err);
+                }
+
+                User.findById(users[1]._id).then((user) => {
+                    //console.log("=================", user);
+                    //console.log("res-auth", res.headers['x-auth']);
+                    //console.log("*******************", user.tokens[0].token);
+                    expect(user.tokens[0]).toInclude({
+                        access: 'auth',
+                        token: res.headers['x-auth']
+                    });
+                    done();
+                }).catch((err) => done(err));
+            });
+    })
+
+
+
+    it('should reject invalid user login', (done) => {
+        request(app)
+            .post('/users/login')
+            .send({
+                email: users[1].email,
+                password: users[1].password + '1'
+            })
+            .expect(400)
+            .expect((res) => {
+                expect(res.headers['x-auth']).toNotExist();
+            })
+            .end((err, res) => {
+                if (err) {
+                    console.log('oops error');
+                    return done(err);
+                }
+
+                User.findById(users[1]._id).then(() => {
+
+                    expect(user.tokens.length).toBe(0);
+                    console.log('findby', user);
+                    done(user);
+                }).catch((err) => done(err));
+            });
+    });
+
+
+
 })

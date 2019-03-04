@@ -47,7 +47,7 @@ UserSchema.methods.toJSON = function () {
     var userObject = user.toObject();
     //console.log(userObject);
     return _.pick(userObject, ['_id', 'email']);
-}
+};
 
 UserSchema.methods.generateAuthToken = function () {
     var user = this;
@@ -86,13 +86,14 @@ UserSchema.statics.findByToken = function (token) {
 };
 UserSchema.statics.findByCredentials = function (email, password) {
     var User = this;
-    return User.findOne({ email }).then((user) => {
+    return this.findOne({ email }).then((user) => {
         if (!user) {
-            return Promise.reject();
+            return Promise.reject('User not available');
         }
         return new Promise((resolve, reject) => {
             bcrypt.compare(password, user.password, (err, res) => {
                 if (res) {
+                    console.log('res', res);
                     resolve(user);
                 } else {
                     reject();

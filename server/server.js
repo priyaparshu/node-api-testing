@@ -116,6 +116,7 @@ app.post('/users', (req, res) => {
         res.header('x-auth', token).send(user);
         //console.log("user==", user)
     }).catch((err) => {
+        console.log('generatetoken -err');
         res.status(400).send(err);
     });
 
@@ -145,7 +146,7 @@ app.get('/users/:id', (req, res) => {
 
 app.patch('/todos/:id', (req, res) => {
     var id = req.params.id;
-    //
+
 
     //console.log(id);
     var body = _.pick(req.body, ['text', 'completed']);
@@ -176,20 +177,22 @@ app.post('/users/login', (req, res) => {
     //console.log(body.email);
 
     User.findByCredentials(body.email, body.password).then((user) => {
-        res.send(user);
+        //console.log(user);
+        //res.send(user);
         return user.generateAuthToken().then((token) => {
+            //     console.log('new-token', token);
+            console.log('user', user);
             res.header('x-auth', token).send(user);
+            // })
+        }).catch((e) => {
+            res.status(400).send('invalid credentials');
         });
-
-    }).catch((e) => {
-        res.status(400).send();
     });
-
-});
-
+})
 
 
-module.exports = { app };
+
 app.listen(port, () => {
     console.log(`listening on port ${port}`)
 });
+module.exports = { app };
