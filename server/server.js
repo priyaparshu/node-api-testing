@@ -30,29 +30,45 @@ app.use(bodyParser.json());
 //         res.statusCode(400).send(e);
 //     })
 // })
+// app.post('/todos', authenticate, (req, res) => {
+//     console.log('creator', req.todo._creator);
+//     var todo = new Todo({
+//         text: req.body.text,
+//         _creator: req.user._id
 
-app.post('/todos', (req, res) => {
+//     });
+
+
+app.post('/todos', authenticate, (req, res) => {
+    //console.log('creator', req._creator);
     var todo = new Todo({
-        text: req.body.text
+        text: req.body.text,
+        _creator: req.user._id
+
     });
 
     todo.save().then((doc) => {
+        //console.log('c', doc);
         res.send(doc);
+
     }, (e) => {
         res.status(400).send(e);
-    })
-})
+    });
+});
 
-app.delete('/todos/:id', (req, res) => {
+app.delete('/todos/:id', authenticate, (req, res) => {
     var id = req.params.id;
     //console.log(ObjectId);
-    console.log('++', id);
+    //console.log('++', id);
     if (!ObjectId.isValid(id)) {
-        console.log("id not found", ObjectId.isValid);
+        //console.log("id not found", ObjectId.isValid);
         return res.status(404).send();
     }
 
-    Todo.findByIdAndDelete(id).then((todo) => {
+    Todo.findOneAndRemove({
+        _id: id,
+        _creator: req.user._id
+    }).then((todo) => {
         //console.log("todo-del", todo.id);
         if (!todo) {
             return res.status(404).send();
@@ -69,8 +85,11 @@ app.delete('/todos/:id', (req, res) => {
 //     res.statusCode(401).send(err);
 // })
 
-app.get('/todos', (req, res) => {
-    Todo.find().then((todos) => {
+app.get('/todos', authenticate, (req, res) => {
+    //console.log('creator get', req);
+    Todo.find({ _creator: req.user._id }).then((todos) => {
+        //console.log('creator-----', req.user._id);
+        //console.log('todos', todos[0]._creator);
         res.send({ todos });
     }, (e) => {
         res.status(400).send(e);
@@ -83,7 +102,7 @@ app.get('/todos', (req, res) => {
 //     console.log(res.params)
 // })
 
-app.get('/todos/:id', (req, res) => {
+app.get('/todos/:id', authenticate, (req, res) => {
     //res.send(req.params);
     var id = req.params.id;
     //console.log(id);
@@ -92,7 +111,12 @@ app.get('/todos/:id', (req, res) => {
         return res.status(404).send();
     }
 
-    Todo.findById(id).then((todo) => {
+    Todo.findOne({
+
+        _id: id,
+        _creator: req.user._id
+
+    }).then((todo) => {
         if (!todo) {
             return res.status(404).send();
         }
@@ -104,19 +128,19 @@ app.get('/todos/:id', (req, res) => {
 
 app.post('/users', (req, res) => {
     var body = _.pick(req.body, ['email', 'password']);
-    //console.log(body);
+    console.log("email already exist", body);
     var user = new User(body);
-    user.save().then(() => {
+    user.save().then((user) => {
         // generate token 
         //console.log("USR", user);
         return user.generateAuthToken();
     }).then((token) => {
-        // console.log('----------');
+        //console.log('----------');
         //console.log('token', token);
         res.header('x-auth', token).send(user);
         //console.log("user==", user)
     }).catch((err) => {
-        console.log('generatetoken -err');
+        //console.log('generatetoken -err');
         res.status(400).send(err);
     });
 
@@ -129,7 +153,7 @@ app.get('/users/me', authenticate, (req, res) => {
 app.get('/users/:id', (req, res) => {
     //res.send(req.params);
     var id = req.params.id;
-    //console.log(id);
+    console.log(id);
     if (!ObjectId.isValid(id)) {
         //console.log('Id not found');
         return res.status(404).send();
@@ -144,11 +168,11 @@ app.get('/users/:id', (req, res) => {
     })
 })
 
-app.patch('/todos/:id', (req, res) => {
+app.patch('/todos/:id', authenticate, (req, res) => {
     var id = req.params.id;
 
 
-    //console.log(id);
+    //console.log('id', id);
     var body = _.pick(req.body, ['text', 'completed']);
 
     if (!ObjectId.isValid) {
@@ -161,12 +185,19 @@ app.patch('/todos/:id', (req, res) => {
         body.completedAt = null;
     }
     // to get new updated value back
-    Todo.findByIdAndUpdate(id, { $set: body }, { new: true }).then((todo) => {
+    Todo.findOneAndUpdate({
+        _id: id,
+        _creator: req.user._id
+
+    }, { $set: body }, { new: true }).then((todo) => {
+        //console.log('toto', todo);
         if (!todo) {
             res.status(404).send();
         }
+        //console.log('send', todo);
         res.send({ todo })
     }).catch((e) => {
+        console.log('inside catch of findbyid');
         res.status(400).send();
     })
 })
@@ -174,18 +205,19 @@ app.patch('/todos/:id', (req, res) => {
 app.post('/users/login', (req, res) => {
 
     var body = _.pick(req.body, ['email', 'password']);
-    //console.log(body.email);
+    console.log("BODY", body);
 
     User.findByCredentials(body.email, body.password).then((user) => {
-        //console.log(user);
+        console.log("user", user);
+        console.log("passwd", body.password);
         //res.send(user);
         return user.generateAuthToken().then((token) => {
-            //     console.log('new-token', token);
-            console.log('user', user);
+            //console.log('new-token', token);
             res.header('x-auth', token).send(user);
             // })
         }).catch((e) => {
-            res.status(400).send('invalid credentials');
+            console.log('findbycred-errblk');
+            res.statusCode(400).send();
         });
     });
 })

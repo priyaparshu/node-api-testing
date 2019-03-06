@@ -56,9 +56,10 @@ UserSchema.methods.generateAuthToken = function () {
     var token = jwt.sign({ _id: user._id.toHexString(), access }, 'abc123').toString();
 
     user.tokens = user.tokens.concat([{ access, token }]);
-    //console.log(tokens);
+    //console.log("Before Return", user);
     //user.tokens({ access, token })
     return user.save().then(() => {
+        console.log("Return from generateAuthToken", user.tokens[0].token);
         return token;
     })
 
@@ -98,16 +99,23 @@ UserSchema.statics.findByToken = function (token) {
 };
 UserSchema.statics.findByCredentials = function (email, password) {
     var User = this;
-    return this.findOne({ email }).then((user) => {
+    return User.findOne({ email }).then((user) => {
+        console.log('findbycred', user);
         if (!user) {
+            //console.log('User not available');
             return Promise.reject('User not available');
         }
+        //console.log('User available');
         return new Promise((resolve, reject) => {
-            bcrypt.compare(password, user.password, (err, res) => {
-                if (res) {
-                    console.log('res', res);
+            bcrypt.compare(password, user.password, (err, result) => {
+                //console.log("Comp password", password);
+                //console.log("comp user.password", user.password);
+                if (result) {
+                    console.log('-======================');
+                    console.log('result', result);
                     resolve(user);
                 } else {
+                    console.log('err', err);
                     reject();
                 }
             });
@@ -126,8 +134,8 @@ UserSchema.pre('save', function (next) {
                 if (err) {
                     console.log(err);
                 }
-                //console.log('hash', hash);
-                //console.log(user.password);
+                console.log('hash', hash);
+                console.log("user.password)", user.password);
                 user.password = hash;
                 next();
             })
