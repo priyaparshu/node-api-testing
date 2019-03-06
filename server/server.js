@@ -86,7 +86,7 @@ app.delete('/todos/:id', authenticate, (req, res) => {
 // })
 
 app.get('/todos', authenticate, (req, res) => {
-    //console.log('creator get', req);
+    console.log('creator get', req.user._id);
     Todo.find({ _creator: req.user._id }).then((todos) => {
         //console.log('creator-----', req.user._id);
         //console.log('todos', todos[0]._creator);
