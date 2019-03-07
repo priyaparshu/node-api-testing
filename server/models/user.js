@@ -54,13 +54,11 @@ UserSchema.methods.generateAuthToken = function () {
     //console.log(user);
     var access = 'auth';
     var token = jwt.sign({ _id: user._id.toHexString(), access }, process.env.JWT_SECRET).toString();
-    console.log('TKN', token);
+    //console.log('TKN', token);
     user.tokens = user.tokens.concat([{ access, token }]);
     //console.log("Before Return", user);
     //user.tokens({ access, token })
     return user.save().then(() => {
-
-        console.log("----Return from generateAuthToken", user.tokens[0]);
         return token;
     })
 
@@ -84,7 +82,7 @@ UserSchema.statics.findByToken = function (token) {
 
     try {
         decoded = jwt.verify(token, process.env.JWT_SECRET)
-        console.log('===========', decoded);
+        //console.log('===========', decoded);
     } catch (e) {
         return Promise.reject();
         // return new Promise((resolve,reject) => {
@@ -101,24 +99,31 @@ UserSchema.statics.findByToken = function (token) {
 UserSchema.statics.findByCredentials = function (email, password) {
     var User = this;
     return User.findOne({ email }).then((user) => {
-        console.log('findbycred', user);
+
         if (!user) {
-            //console.log('User not available');
-            return Promise.reject('User not available');
+            return Promise.reject();
         }
         //console.log('User available');
         return new Promise((resolve, reject) => {
             bcrypt.compare(password, user.password, (err, result) => {
-                //console.log("Comp password", password);
-                //console.log("comp user.password", user.password);
+
                 if (result) {
-                    console.log('-======================');
-                    console.log('result', user);
-                    resolve(user);
+                    resolve(user)
                 } else {
-                    console.log('err', err);
                     reject();
+
                 }
+
+
+
+                // if (result) {
+                //     console.log('-======================');
+                //     console.log('result', user);
+                //     resolve(user);
+                // } else {
+                //     console.log('err', err);
+                //     reject();
+                // }
             })
         });
     });
@@ -139,7 +144,7 @@ UserSchema.pre('save', function (next) {
 
 
                 user.password = hash;
-                console.log("user.password from presave)", user.password);
+                //console.log("user.password from presave)", user.password);
                 next();
             })
 

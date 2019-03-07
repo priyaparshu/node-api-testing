@@ -205,24 +205,18 @@ app.patch('/todos/:id', authenticate, (req, res) => {
 app.post('/users/login', (req, res) => {
 
     var body = _.pick(req.body, ['email', 'password']);
-    console.log("BODY", body);
 
     User.findByCredentials(body.email, body.password).then((user) => {
-
-
-        console.log('BODY-user', body);
-        //res.send(user);
-        console.log("findbycredUser", user)
         return user.generateAuthToken().then((token) => {
-            //console.log('new-token', token);
+
             res.header('x-auth', token).send(user);
-            // })
-        }).catch((e) => {
-            console.log('findbycred-errblk');
-            res.statusCode(400).send();
         });
+    }).catch((e) => {
+        console.log('findbycred-errblk');
+        res.status(400).send();
     });
-})
+});
+
 
 app.delete('/users/me/token', authenticate, (req, res) => {
     req.user.removeToken(req.token).then(() => {
