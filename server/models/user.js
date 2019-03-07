@@ -54,12 +54,13 @@ UserSchema.methods.generateAuthToken = function () {
     //console.log(user);
     var access = 'auth';
     var token = jwt.sign({ _id: user._id.toHexString(), access }, process.env.JWT_SECRET).toString();
-
+    console.log('TKN', token);
     user.tokens = user.tokens.concat([{ access, token }]);
     //console.log("Before Return", user);
     //user.tokens({ access, token })
     return user.save().then(() => {
-        console.log("Return from generateAuthToken", user.tokens[0].token);
+
+        console.log("----Return from generateAuthToken", user.tokens[0]);
         return token;
     })
 
@@ -112,13 +113,13 @@ UserSchema.statics.findByCredentials = function (email, password) {
                 //console.log("comp user.password", user.password);
                 if (result) {
                     console.log('-======================');
-                    console.log('result', result);
+                    console.log('result', user);
                     resolve(user);
                 } else {
                     console.log('err', err);
                     reject();
                 }
-            });
+            })
         });
     });
 };
@@ -128,15 +129,17 @@ UserSchema.pre('save', function (next) {
     var user = this;
     //console.log('----------', user);
     if (user.isModified('password')) {
+        //console.log('user.isModified', user.isModified('password'));
         bcrypt.genSalt(10, (err, salt) => {
             //console.log(salt);
             bcrypt.hash(user.password, salt, (err, hash) => {
                 if (err) {
                     console.log(err);
                 }
-                console.log('hash', hash);
-                console.log("user.password)", user.password);
+
+
                 user.password = hash;
+                console.log("user.password from presave)", user.password);
                 next();
             })
 
