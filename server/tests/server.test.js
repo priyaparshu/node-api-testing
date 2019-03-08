@@ -147,7 +147,7 @@ describe('DELETE /todos/:id', () => {
                 }
                 Todo.findById(hexId).then((todo) => {
                     //console.log("todo", todo);
-                    expect(todo).toNotExist();
+                    expect(todo).toBeFalsy();
                     done();
                 }).catch((e) => {
                     done(e)
@@ -170,7 +170,7 @@ describe('DELETE /todos/:id', () => {
                 }
                 Todo.findById(hexId).then((todo) => {
                     //console.log("todo", todo);
-                    expect(todo).toExist();
+                    expect(todo).toBeTruthy();
                     done();
                 }).catch((e) => {
                     done(e)
@@ -211,9 +211,14 @@ describe('PATCH /todos/:id', () => {
                 text: text
             })
             .expect(200)
-            .end(done);
+            .expect((res) => {
+                expect(res.body.todo.text).toBe(text);
+                expect(res.body.todo.completed).toBe(true);
+                expect(typeof res.body.todo.completedAt).toBe('number');
 
-    })
+            }).end(done)
+
+    });
 
     it('should not update the todo of another user', (done) => {
         var hexId = todos[0]._id.toHexString();
@@ -285,8 +290,8 @@ describe('POST /users', () => {
             .send({ email, password })
             .expect(200)
             .expect((res) => {
-                expect(res.headers['x-auth']).toExist();
-                expect(res.body._id).toExist();
+                expect(res.headers['x-auth']).toBeTruthy();
+                expect(res.body._id).toBeTruthy();
                 expect(res.body.email).toBe(email);
             })
             .end((err) => {
@@ -294,9 +299,9 @@ describe('POST /users', () => {
                     return done(err);
                 }
                 User.findOne({ email }).then((user) => {
-                    expect(user).toExist();
+                    expect(user).toBeTruthy();
                     //check if pwd is hashed or not
-                    expect(user.password).toNotBe(password);
+                    expect(user.password).not.toBe(password);
                     done();
                 }).catch((err) => done(err));
             });
@@ -358,7 +363,7 @@ describe('POST /users/login', () => {
             })
             .expect(200)
             .expect((res) => {
-                expect(res.headers['x-auth']).toExist();
+                expect(res.headers['x-auth']).toBeTruthy();
 
             })
             .end((err, res) => {
@@ -371,7 +376,7 @@ describe('POST /users/login', () => {
                     //console.log("=================", user);
                     //console.log("res-auth", res.headers['x-auth']);
                     //console.log("*******************", user.tokens[0].token);
-                    expect(user.tokens[1]).toInclude({
+                    expect(user.toObject().tokens[1]).toMatchObject({
                         access: 'auth',
                         token: res.headers['x-auth']
                     });
@@ -391,7 +396,7 @@ describe('POST /users/login', () => {
             .expect(400)
             .expect((res) => {
                 console.log(res.headers);
-                expect(res.headers['x-auth']).toNotExist();
+                expect(res.headers['x-auth']).toBeFalsy();
             })
             .end((err, res) => {
 
