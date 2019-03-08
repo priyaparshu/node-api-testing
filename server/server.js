@@ -16,7 +16,7 @@ const { ObjectId } = require('mongodb');
 
 
 var app = express();
-
+const host = '0.0.0.0';
 const port = process.env.PORT;
 app.use(bodyParser.json());
 
@@ -227,7 +227,7 @@ app.delete('/users/me/token', authenticate, (req, res) => {
 });
 
 
-app.listen(port, () => {
-    console.log(`listening on port ${port}`)
+app.listen(port, host, () => {
+    console.log(`listening on port ${port} on ${host}`)
 });
 module.exports = { app };
