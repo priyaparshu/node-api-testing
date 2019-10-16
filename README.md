@@ -7,11 +7,15 @@ Mongoose is a ORM (object relational mapping which helps you to structure your d
 It helps to define properties and perform custom validations.
 
 Following are the routes for Todo application:
-GET /todos :
-POST /todos :
-GET /todos/:id :
-
+GET /todos : to get all todo
+POST /todos : to create a new todo
+GET /todos/:id :to get a todo with specific id
+patch('/todos/:id'): to update a todo
+Delete('/todos/:id'): to delete a todo
 
 Testing:
 To test our node application, we will be using mocha which is a framework to test suits. It makes asynchronous testing easy and fun. We will be using 
 expect as the assertion library.
+
+Other Library used:
+lodash : to pick the fields that a user is allowed to update.
